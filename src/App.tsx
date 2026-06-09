@@ -13,10 +13,18 @@ import AiConsultant from "./components/AiConsultant";
 import Footer from "./components/Footer";
 import { Lead } from "./types";
 
+// Фикс: Импортируем изображения как модули, чтобы Vite корректно обработал и захэшировал их при сборке
+import castleImage from "./assets/images/hero_3d_castle_1781009950794.png";
+import exteriorModernVillaImage from "./assets/images/exterior_modern_villa_1781009969887.png";
+import interiorLuxuryLoftImage from "./assets/images/interior_luxury_loft_1781009986606.png";
+
 export default function App() {
   const [leads, setLeads] = React.useState<Lead[]>([]);
   const [isCrmOpen, setIsCrmOpen] = React.useState(false);
   const [isAiOpen, setIsAiOpen] = React.useState(false);
+  
+  // Стейт для хранения контекста запроса к ИИ
+  const [aiContext, setAiContext] = React.useState<string | null>(null);
   
   // Storage for Quotation Calculator results exported to form
   const [preFilledVals, setPreFilledVals] = React.useState<{
@@ -55,21 +63,18 @@ export default function App() {
     setPreFilledVals(calcDetails);
   };
 
+  // Фикс: Теперь контекст сохраняется в стейт и может быть передан внутрь ИИ-компонента
   const handleOpenAiWithContext = (contextPrompt?: string) => {
+    setAiContext(contextPrompt || null);
     setIsAiOpen(true);
   };
-
-  // Image assets (The generated PNG paths we prepared!)
-  const castleImage = "/src/assets/images/hero_3d_castle_1781009950794.png";
-  const exteriorModernVillaImage = "/src/assets/images/exterior_modern_villa_1781009969887.png";
-  const interiorLuxuryLoftImage = "/src/assets/images/interior_luxury_loft_1781009986606.png";
 
   return (
     <div className="min-h-screen bg-black text-white relative">
       {/* 1. Header (Navigation & actions toggle indicators) */}
       <Header
         onOpenCrm={() => setIsCrmOpen(true)}
-        onOpenAi={() => setIsAiOpen(true)}
+        onOpenAi={() => handleOpenAiWithContext()}
         crmCount={leads.filter((l) => l.status === "Новый").length}
       />
 
@@ -102,7 +107,7 @@ export default function App() {
       />
 
       {/* 4. Portfolio Showcase Screen (Interactive carousel + materials config) */}
-      <PortfolioSection onOpenConsultant={() => setIsAiOpen(true)} />
+      <PortfolioSection onOpenConsultant={(prompt) => handleOpenAiWithContext(prompt)} />
 
       {/* 5. Showroom Floor Material Customizer Screen */}
       <CustomizerSection />
@@ -117,7 +122,7 @@ export default function App() {
       <ContactSection
         preFilledVals={preFilledVals}
         onLeadSubmitted={syncLeads}
-        onOpenAi={() => setIsAiOpen(true)}
+        onOpenAi={() => handleOpenAiWithContext("Пользователь запрашивает помощь из формы контактов.")}
       />
 
       {/* 9. Elegant Footer area */}
@@ -139,7 +144,11 @@ export default function App() {
         {isAiOpen && (
           <AiConsultant
             isOpen={isAiOpen}
-            onClose={() => setIsAiOpen(false)}
+            onClose={() => {
+              setIsAiOpen(false);
+              setAiContext(null); // Очищаем контекст при закрытии
+            }}
+            initialContext={aiContext} // Пропс для вашего компонента ИИ
           />
         )}
       </AnimatePresence>

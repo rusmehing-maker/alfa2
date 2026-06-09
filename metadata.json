@@ -1,0 +1,6 @@
+{
+  "name": "3dvisualAP Studio",
+  "description": "Премиальная 3D визуализация и моделирование архитектуры, интерьеров и анимация. Адаптивная вёрстка, плавные анимации и интерактивная CRM-панель.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
